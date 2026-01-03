@@ -201,6 +201,64 @@ const ciudades = [
   }
 ];
 
+function crearTarjetaCiudad(ciudad) {
+  const col = document.createElement('div');
+  col.className = 'col';
+
+  col.innerHTML = `
+    <div class="card shadow-lg h-100 border-secondary">
+      <div class="card-img-top">
+        <img 
+          src="${ciudad.imagen}" 
+          alt="${ciudad.nombre}" 
+          class="img-fluid rounded-top"
+        >
+      </div>
+
+      <div class="card-body text-center">
+        <span>${iconos[ciudad.estado]}</span>
+
+        <h5 class="card-title mt-3 mb-2">
+          ${ciudad.nombre}
+        </h5>
+
+        <p class="text-secondary fw-medium mb-1">
+          ${ciudad.estado}
+        </p>
+
+        <h4 class="fw-bold">
+          ${ciudad.temperatura}°C
+        </h4>
+
+        <button 
+          class="btn mt-3 btn-detalle fw-semibold"
+          data-id="${ciudad.id}"
+        >
+          Ver Detalles
+        </button>
+      </div>
+    </div>
+  `;
+
+  return col;
+}
+function renderizarTarjetas(ciudades) {
+  const contenedor = document.querySelector('.pronostico__container');
+  contenedor.innerHTML = '';
+
+  ciudades.forEach(ciudad => {
+    const tarjeta = crearTarjetaCiudad(ciudad);
+    contenedor.appendChild(tarjeta);
+  });
+}
+renderizarTarjetas(ciudades);
+
+
+
+
+
+
+
 /* omití la forma nativa de bootstrap de abrir el modal para hacerlo de manera manual con JS.
    Uso propagación de eventos para hacer el código más eficiente */
 
