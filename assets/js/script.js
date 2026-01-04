@@ -6,7 +6,7 @@ const iconos = {
 };
 
 /* creo un array de objetos con los datos de las ciudades, lo que me permite
-agregarlos de manera dinámica a un sólo modal base */ 
+agregarlos de manera dinámica a un sólo modal base */
 
 const ciudades = [
   {
@@ -255,6 +255,94 @@ renderizarTarjetas(ciudades);
 
 
 
+function generarResumenSemana(pronosticoSemana) {
+  let max = -Infinity;
+  let min = Infinity;
+  let sumaTemp = 0;
+
+  const conteoEstados = {};
+
+  pronosticoSemana.forEach(dia => {
+    // temperaturas
+    if (dia.temperatura > max) max = dia.temperatura;
+    if (dia.temperatura < min) min = dia.temperatura;
+    sumaTemp += dia.temperatura;
+
+    // conteo de estados
+    if (conteoEstados[dia.estado]) {
+      conteoEstados[dia.estado]++;
+    } else {
+      conteoEstados[dia.estado] = 1;
+    }
+  });
+
+  const promedio = Math.round(sumaTemp / pronosticoSemana.length);
+
+  // determinar estado predominante
+  let estadoPredominante = '';
+  let maxDias = 0;
+
+  for (const estado in conteoEstados) {
+    if (conteoEstados[estado] > maxDias) {
+      maxDias = conteoEstados[estado];
+      estadoPredominante = estado;
+    }
+  }
+
+  // mensaje resumen
+  let resumen = '';
+
+  const mensajesEstado = {
+  despejado: 'despejada',
+  lluvia: 'lluviosa',
+  nublado: 'nublada',
+  parcial: 'parcialmente nublada'
+};
+
+if (maxDias >= 3) {
+  const descripcion = mensajesEstado[estadoPredominante] || estadoPredominante;
+  resumen = `Semana mayormente ${descripcion}`;
+} else {
+  resumen = 'Semana con clima variable';
+}
+
+  return {
+    max,
+    min,
+    promedio,
+    conteoEstados,
+    resumen
+  };
+}
+
+function renderizarResumenSemana(resumen) {
+  const contenedor = document.querySelector('#resumenSemana');
+
+  // lista de estados
+  const estadosHTML = Object.entries(resumen.conteoEstados)
+    .map(([estado, cantidad]) => {
+      return `<li>${cantidad} días ${estado}</li>`;
+    })
+    .join('');
+
+  contenedor.innerHTML = `
+    <h5 class="my-3">Resumen semanal</h5>
+
+    <p class="mb-1">
+      Máx: <strong>${resumen.max}°C</strong> |
+      Mín: <strong>${resumen.min}°C</strong> |
+      Promedio: <strong>${resumen.promedio}°C</strong>
+    </p>
+
+    <ul class="mb-2">
+      ${estadosHTML}
+    </ul>
+
+    <p class="fw-semibold text-primary">
+      ${resumen.resumen}
+    </p>
+  `;
+}
 
 
 
@@ -298,6 +386,9 @@ function cargarModal({ nombre, imagen, temperatura, estado, humedad, viento, pro
     contenedor.appendChild(item);
   });
 
+  const resumenSemana = generarResumenSemana(pronosticoSemana);
+  renderizarResumenSemana(resumenSemana);
+
   const modal = new bootstrap.Modal('#detalleModal');
   modal.show();
 }
@@ -306,10 +397,10 @@ function cargarModal({ nombre, imagen, temperatura, estado, humedad, viento, pro
 
 const topButton = document.getElementById('btn-top')
 window.addEventListener('scroll', () => {
-  if(window.scrollY > 50){
+  if (window.scrollY > 50) {
     topButton.classList.add('show')
   }
-  else{
+  else {
     topButton.classList.remove('show')
   }
 })
