@@ -1,4 +1,6 @@
 
+/* script que valida el formulario */
+
 const form = document.querySelector('.needs-validation');
 
 form.addEventListener('submit', ev => {

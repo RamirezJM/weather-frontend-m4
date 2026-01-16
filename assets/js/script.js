@@ -201,39 +201,23 @@ const ciudades = [
   }
 ];
 
-function crearTarjetaCiudad(ciudad) {
+/* función que crea la tarjeta de cada ciudad*/
+
+function crearTarjetaCiudad({ id, nombre, imagen, estado, temperatura }) {
   const col = document.createElement('div');
   col.className = 'col';
 
   col.innerHTML = `
     <div class="card shadow-lg h-100 border-secondary">
       <div class="card-img-top">
-        <img 
-          src="${ciudad.imagen}" 
-          alt="${ciudad.nombre}" 
-          class="img-fluid rounded-top"
-        >
+        <img src="${imagen}" alt="${nombre}" class="img-fluid rounded-top">
       </div>
-
       <div class="card-body text-center">
-        <span>${iconos[ciudad.estado]}</span>
-
-        <h5 class="card-title mt-3 mb-2">
-          ${ciudad.nombre}
-        </h5>
-
-        <p class="text-secondary fw-medium mb-1">
-          ${ciudad.estado}
-        </p>
-
-        <h4 class="fw-bold">
-          ${ciudad.temperatura}°C
-        </h4>
-
-        <button 
-          class="btn mt-3 btn-detalle fw-semibold"
-          data-id="${ciudad.id}"
-        >
+        <span>${iconos[estado]}</span>
+        <h5 class="card-title mt-3 mb-2">${nombre}</h5>
+        <p class="text-secondary fw-medium mb-1">${estado}</p>
+        <h4 class="fw-bold">${temperatura}°C</h4>
+        <button class="btn mt-3 btn-detalle fw-semibold" data-id="${id}">
           Ver Detalles
         </button>
       </div>
@@ -242,6 +226,9 @@ function crearTarjetaCiudad(ciudad) {
 
   return col;
 }
+
+/* función que agrega la tarjeta creada al DOM */
+
 function renderizarTarjetas(ciudades) {
   const contenedor = document.querySelector('.pronostico__container');
   contenedor.innerHTML = '';
@@ -253,22 +240,24 @@ function renderizarTarjetas(ciudades) {
 }
 renderizarTarjetas(ciudades);
 
-
+/* función que crea el resumen semanal desde los datos del modal con detalles */
 
 function generarResumenSemana(pronosticoSemana) {
-  let max = -Infinity;
+  let max = -Infinity;    //usando infinity como valor permite que cualquier dato real los reemplace.
   let min = Infinity;
   let sumaTemp = 0;
 
   const conteoEstados = {};
 
+  /* temperaturas */
+
   pronosticoSemana.forEach(dia => {
-    // temperaturas
     if (dia.temperatura > max) max = dia.temperatura;
     if (dia.temperatura < min) min = dia.temperatura;
     sumaTemp += dia.temperatura;
 
-    // conteo de estados
+    /*   conteo de estados */
+
     if (conteoEstados[dia.estado]) {
       conteoEstados[dia.estado]++;
     } else {
@@ -278,7 +267,8 @@ function generarResumenSemana(pronosticoSemana) {
 
   const promedio = Math.round(sumaTemp / pronosticoSemana.length);
 
-  // determinar estado predominante
+  /*  determinar estado predominante */
+
   let estadoPredominante = '';
   let maxDias = 0;
 
@@ -289,22 +279,29 @@ function generarResumenSemana(pronosticoSemana) {
     }
   }
 
-  // mensaje resumen
+  /* mensaje resumen */
+
   let resumen = '';
 
-  const mensajesEstado = {
-  despejado: 'despejada',
-  lluvia: 'lluviosa',
-  nublado: 'nublada',
-  parcial: 'parcialmente nublada'
-};
+  /* creo un diccionario para que el género del estado
+  calce con 'semana' y no obtener, por ejemplo, 'semana lluvia'.  */
 
-if (maxDias >= 3) {
-  const descripcion = mensajesEstado[estadoPredominante] || estadoPredominante;
-  resumen = `Semana mayormente ${descripcion}`;
-} else {
-  resumen = 'Semana con clima variable';
-}
+  const mensajesEstado = {
+    despejado: 'despejada',
+    lluvia: 'lluviosa',
+    nublado: 'nublada',
+    parcial: 'parcialmente nublada'
+  };
+
+  /* Si una condición se repite más de 3 días, será la prediminante
+  de la semana. De no ser así, será una semana con clima variable.  */
+
+  if (maxDias >= 3) {
+    const descripcion = mensajesEstado[estadoPredominante] || estadoPredominante;
+    resumen = `Semana mayormente ${descripcion}`;
+  } else {
+    resumen = 'Semana con clima variable';
+  }
 
   return {
     max,
@@ -315,10 +312,13 @@ if (maxDias >= 3) {
   };
 }
 
+/* función que agrega a DOM el resumen semanal */
+
 function renderizarResumenSemana(resumen) {
   const contenedor = document.querySelector('#resumenSemana');
 
   // lista de estados
+
   const estadosHTML = Object.entries(resumen.conteoEstados)
     .map(([estado, cantidad]) => {
       return `<li>${cantidad} días ${estado}</li>`;
@@ -327,25 +327,15 @@ function renderizarResumenSemana(resumen) {
 
   contenedor.innerHTML = `
     <h5 class="my-3">Resumen semanal</h5>
-
     <p class="mb-1">
       Máx: <strong>${resumen.max}°C</strong> |
       Mín: <strong>${resumen.min}°C</strong> |
       Promedio: <strong>${resumen.promedio}°C</strong>
     </p>
-
-    <ul class="mb-2">
-      ${estadosHTML}
-    </ul>
-
-    <p class="fw-semibold text-primary">
-      ${resumen.resumen}
-    </p>
+    <ul class="mb-2">${estadosHTML}</ul>
+    <p class="fw-semibold text-primary">${resumen.resumen}</p>
   `;
 }
-
-
-
 
 /* omití la forma nativa de bootstrap de abrir el modal para hacerlo de manera manual con JS.
    Uso propagación de eventos para hacer el código más eficiente */
@@ -360,6 +350,8 @@ contenedorTarjetas.addEventListener("click", e => {
 
   cargarModal(ciudad);
 });
+
+/* función que crea el modal con detalles del pronóstico */
 
 function cargarModal({ nombre, imagen, temperatura, estado, humedad, viento, pronosticoSemana }) {
   document.querySelector('#detalleModalLabel').textContent = nombre;
@@ -388,12 +380,11 @@ function cargarModal({ nombre, imagen, temperatura, estado, humedad, viento, pro
 
   const resumenSemana = generarResumenSemana(pronosticoSemana);
   renderizarResumenSemana(resumenSemana);
-
   const modal = new bootstrap.Modal('#detalleModal');
   modal.show();
 }
 
-// botón top
+/* botón top */
 
 const topButton = document.getElementById('btn-top')
 window.addEventListener('scroll', () => {
